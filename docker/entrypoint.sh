@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+cd /var/www/html
+
+# فشل مبكر لو إعداد أساسي ناقص
+for v in APP_KEY AI_SERVICE_TOKEN ANTHROPIC_API_KEY AI_DB_DATABASE AI_DB_USERNAME AI_DB_PASSWORD; do
+    eval "val=\${$v}"
+    if [ -z "$val" ]; then
+        echo "ERROR: environment variable $v is not set (check your .env)" >&2
+        exit 1
+    fi
+done
+
+# اللوجز (ai_logs) في sqlite جوه الـ volume مش جوه الـ image
+export DB_CONNECTION=sqlite
+export DB_DATABASE=/var/www/html/storage/app/database.sqlite
+
+mkdir -p storage/app storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs
+[ -f storage/app/database.sqlite ] || touch storage/app/database.sqlite
+chown -R www-data:www-data storage bootstrap/cache
+
+php artisan package:discover --ansi
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+
+exec "$@"

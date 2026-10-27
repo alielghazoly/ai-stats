@@ -1,0 +1,33 @@
+services:
+  app:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ai_storage:/var/www/html/storage
+    # عشان الـ container يوصل لداتابيز شغالة على نفس السيرفر (host.docker.internal)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # لو الداتابيز في docker compose تاني، فك الكومنت وحط اسم الـ network:
+    # networks:
+    #   - default
+    #   - main_project_net
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      # 0.0.0.0 عشان أي container (أو سيرفر تاني) يوصل. لو المشروع الأساسي مش docker
+      # وعلى نفس الجهاز، غيّرها لـ 127.0.0.1 في .env (AI_SERVICE_BIND).
+      - "${AI_SERVICE_BIND:-0.0.0.0}:${AI_SERVICE_PORT:-8090}:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  ai_storage:
+
+# networks:
+#   main_project_net:
+#     external: true
