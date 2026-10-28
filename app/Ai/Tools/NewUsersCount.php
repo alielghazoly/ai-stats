@@ -31,6 +31,7 @@ class NewUsersCount extends AiTool
             'from'  => $input['from_date'],
             'to'    => $input['to_date'],
             'count' => $this->db()->table('users')
+                ->whereNull('deleted_at')
                 ->whereBetween('created_at', [$from, $to])
                 ->count(),
         ];

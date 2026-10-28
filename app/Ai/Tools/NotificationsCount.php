@@ -19,14 +19,8 @@ class NotificationsCount extends AiTool
     {
         return [
             'type'       => 'object',
-            'properties' => $this->dateRangeProperties() + [
-                'channel' => [
-                    'type'        => 'string',
-                    'enum'        => ['database', 'mail', 'sms', 'push'],
-                    'description' => 'Optional channel filter',
-                ],
-            ],
-            'required' => ['from_date', 'to_date'],
+            'properties' => $this->dateRangeProperties(),
+            'required'   => ['from_date', 'to_date'],
         ];
     }
 
@@ -34,18 +28,16 @@ class NotificationsCount extends AiTool
     {
         [$from, $to] = $this->range($input);
 
-        // مثال: عدّل اسم الجدول/الأعمدة حسب الـ schema عندك
         $query = $this->db()->table('notifications')
+            ->whereNull('deleted_at')
             ->whereBetween('created_at', [$from, $to]);
 
-        if (! empty($input['channel'])) {
-            $query->where('channel', $input['channel']);
-        }
-
         return [
-            'from'  => $input['from_date'],
-            'to'    => $input['to_date'],
-            'count' => $query->count(),
+            'from'      => $input['from_date'],
+            'to'        => $input['to_date'],
+            'created'   => (clone $query)->count(),
+            'sent'      => (clone $query)->whereNotNull('sent_at')->count(),
+            'important' => (clone $query)->where('is_important', true)->count(),
         ];
     }
 }

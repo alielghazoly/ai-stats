@@ -33,5 +33,5 @@ Each answered question is also stored in the `ai_logs` table (tools, tokens, dur
 
 ## Conventions
 - New tool: copy a file in `app/Ai/Tools`, implement `name/description/schema/handle`, register it in `ToolRegistry`, grant `SELECT` in `sql/readonly_user.sql`, add a test.
-- Tools return aggregated numbers only; never expose DB errors to the model. Table/column names in tools are assumptions about the main project — verify them.
+- Tools return aggregated numbers only; never expose DB errors to the model. Tools are mapped to the main project's real schema (see `~/Projects/backend`): NFC top-ups = `recharge_session` (status 0 new/1 paid/2 charged/3 canceled; session_type 0 electricity/1 water), complaints = `contact_forms` (type 0 request/1 complain/2 orion; status 0–5), plus `users` and `notifications` (all soft-deleted via `deleted_at`). Keep status mappings in sync with the backend enums.
 - Code comments and user-facing strings are Arabic; keep that style.
