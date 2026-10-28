@@ -86,14 +86,24 @@ class StatsAssistant
 
     private function call(array $messages): array
     {
+        $openai = config('ai.provider') === 'openai';
+
         try {
-            $response = $this->http()->post('/v1/messages', [
-                'model'      => config('ai.model'),
-                'max_tokens' => config('ai.max_tokens'),
-                'system'     => $this->systemPrompt(),
-                'tools'      => $this->registry->definitions(),
-                'messages'   => $messages,
-            ]);
+            if ($openai) {
+                $adapter  = new OpenAiAdapter();
+                $response = $this->http()->post('/chat/completions', $adapter->payload(
+                    config('ai.model'), config('ai.max_tokens'), $this->systemPrompt(),
+                    $this->registry->definitions(), $messages
+                ));
+            } else {
+                $response = $this->http()->post('/v1/messages', [
+                    'model'      => config('ai.model'),
+                    'max_tokens' => config('ai.max_tokens'),
+                    'system'     => $this->systemPrompt(),
+                    'tools'      => $this->registry->definitions(),
+                    'messages'   => $messages,
+                ]);
+            }
         } catch (ConnectionException $e) {
             report($e);
             throw new AiUnavailable('خدمة الذكاء الاصطناعي مش متاحة دلوقتي. حاول تاني بعد شوية.', 0, $e);
@@ -104,16 +114,21 @@ class StatsAssistant
             throw new AiUnavailable('خدمة الذكاء الاصطناعي مش متاحة دلوقتي. حاول تاني بعد شوية.');
         }
 
-        return $response->json();
+        return $openai ? $adapter->normalize($response->json()) : $response->json();
     }
 
     private function http(): PendingRequest
     {
-        return Http::baseUrl(config('ai.base_url'))
-            ->withHeaders([
+        $request = Http::baseUrl(config('ai.base_url'));
+
+        $request = config('ai.provider') === 'openai'
+            ? $request->withToken((string) config('ai.api_key'))
+            : $request->withHeaders([
                 'x-api-key'         => config('ai.api_key'),
                 'anthropic-version' => config('ai.version'),
-            ])
+            ]);
+
+        return $request
             ->acceptJson()
             ->asJson()
             ->timeout(config('ai.timeout'))

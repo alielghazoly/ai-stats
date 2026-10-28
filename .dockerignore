@@ -5,3 +5,6 @@ node_modules
 storage/logs/*
 storage/framework/*/*
 tests
+bootstrap/cache/*.php
+storage/app/*.sqlite
+database/*.sqlite

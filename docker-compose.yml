@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - ai_storage:/var/www/html/storage
+      - ./:/var/www/html
     # عشان الـ container يوصل لداتابيز شغالة على نفس السيرفر (host.docker.internal)
     extra_hosts:
       - "host.docker.internal:host-gateway"

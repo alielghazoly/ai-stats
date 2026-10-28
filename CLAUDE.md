@@ -11,6 +11,7 @@ with a Bearer token; the service reads the main project's DB with a **SELECT-onl
 - `app/Ai/ToolRegistry.php` + `app/Ai/Tools/*` — the tools the model can call (aggregate counts only).
 - `app/Http/Middleware/LogAiRequests.php` — per-request log to the `ai_requests` channel.
 - `config/ai.php` — all AI/service/main-DB settings. `AiServiceProvider` registers the `main_readonly` connection.
+  `AI_PROVIDER=anthropic|openai` (openai = any OpenAI-compatible API, e.g. free OpenRouter/Groq/Ollama models) — `app/Ai/OpenAiAdapter.php` converts formats.
 - `sql/readonly_user.sql` — grants for the read-only DB user. `examples/main-project/` — client code for the caller.
 - `docker/` + `docker-compose.yml` — php-fpm + nginx (port 8090). `entrypoint.sh` fails fast if required env is missing.
 

@@ -3,9 +3,12 @@
 $driver = env('AI_DB_DRIVER', 'pgsql'); // pgsql | mysql
 
 return [
-    // ---- Anthropic API ----
-    'api_key'    => env('ANTHROPIC_API_KEY'),
-    'base_url'   => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com'),
+    // ---- مزوّد الـ AI ----
+    // anthropic (افتراضي) | openai = أي API متوافق مع OpenAI (OpenRouter, Groq, Gemini, Ollama...)
+    // مثال مجاني: AI_PROVIDER=openai AI_BASE_URL=https://openrouter.ai/api/v1 AI_API_KEY=... AI_MODEL=<موديل :free بيدعم tools>
+    'provider'   => env('AI_PROVIDER', 'anthropic'),
+    'api_key'    => env('AI_API_KEY', env('ANTHROPIC_API_KEY')),
+    'base_url'   => env('AI_BASE_URL', env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com')),
     'version'    => '2023-06-01',
     // راجع الـ docs لأحدث اسم موديل. موديل أصغر كفاية لمهمة زي دي.
     'model'      => env('AI_MODEL', 'claude-sonnet-5-5'),

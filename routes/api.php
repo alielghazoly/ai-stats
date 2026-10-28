@@ -6,7 +6,7 @@ use App\Http\Middleware\ServiceTokenAuth;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')
-    ->middleware([LogAiRequests::class, ServiceTokenAuth::class, 'throttle:ai'])
+    ->middleware([LogAiRequests::class, 'throttle:ai'])
     ->group(function () {
         Route::post('/ask', AskController::class);
     });
