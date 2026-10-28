@@ -26,7 +26,10 @@ chown -R www-data:www-data storage bootstrap/cache
 
 php artisan package:discover --ansi
 php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
+# الكاش في production بس (مع bind mount في الـ dev كان بيكتب ملفات root جوه المشروع)
+if [ "${APP_ENV:-production}" = "production" ]; then
+    php artisan config:cache
+    php artisan route:cache
+fi
 
 exec "$@"

@@ -23,6 +23,8 @@ return [
 
     // ---- لوج الطلبات ----
     'log_channel' => env('AI_LOG_CHANNEL', 'ai_requests'),
+    'provider_log_channel' => env('AI_PROVIDER_LOG_CHANNEL', 'ai_provider'),
+    'log_body_limit' => (int) env('AI_LOG_BODY_LIMIT', 4000),
 
     // ---- التواريخ ----
     // توقيت الأدمن (اللي بيقول "الشهر ده" بتوقيته)

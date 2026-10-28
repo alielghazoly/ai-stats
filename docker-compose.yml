@@ -4,7 +4,8 @@ services:
     env_file: .env
     restart: unless-stopped
     volumes:
-      - ai_storage:/var/www/html/storage
+      # dev: الكود + storage (logs) على الجهاز مباشرة. في production شيل السطر التاني وفعّل ai_storage:
+      # - ai_storage:/var/www/html/storage
       - ./:/var/www/html
     # عشان الـ container يوصل لداتابيز شغالة على نفس السيرفر (host.docker.internal)
     extra_hosts:

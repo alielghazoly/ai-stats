@@ -6,6 +6,8 @@ use App\Models\AiLog;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class StatsAssistant
 {
@@ -86,28 +88,50 @@ class StatsAssistant
 
     private function call(array $messages): array
     {
-        $openai = config('ai.provider') === 'openai';
+        $openai  = config('ai.provider') === 'openai';
+        $adapter = new OpenAiAdapter();
+        $started = microtime(true);
+
+        if ($openai) {
+            $path = '/chat/completions';
+            $body = $adapter->payload(
+                config('ai.model'), config('ai.max_tokens'), $this->systemPrompt(),
+                $this->registry->definitions(), $messages
+            );
+        } else {
+            $path = '/v1/messages';
+            $body = [
+                'model'      => config('ai.model'),
+                'max_tokens' => config('ai.max_tokens'),
+                'system'     => $this->systemPrompt(),
+                'tools'      => $this->registry->definitions(),
+                'messages'   => $messages,
+            ];
+        }
+
+        $context = [
+            'provider' => config('ai.provider'),
+            'url'      => rtrim(config('ai.base_url'), '/') . $path,
+            'model'    => config('ai.model'),
+            'request'  => $this->clip(json_encode($this->withoutToolDefinitions($body), JSON_UNESCAPED_UNICODE)),
+        ];
 
         try {
-            if ($openai) {
-                $adapter  = new OpenAiAdapter();
-                $response = $this->http()->post('/chat/completions', $adapter->payload(
-                    config('ai.model'), config('ai.max_tokens'), $this->systemPrompt(),
-                    $this->registry->definitions(), $messages
-                ));
-            } else {
-                $response = $this->http()->post('/v1/messages', [
-                    'model'      => config('ai.model'),
-                    'max_tokens' => config('ai.max_tokens'),
-                    'system'     => $this->systemPrompt(),
-                    'tools'      => $this->registry->definitions(),
-                    'messages'   => $messages,
-                ]);
-            }
+            $response = $this->http()->post($path, $body);
         } catch (ConnectionException $e) {
+            $this->logProvider('error', 'ai.provider.call', $context + [
+                'error'       => $e->getMessage(),
+                'duration_ms' => $this->elapsed($started),
+            ]);
             report($e);
             throw new AiUnavailable('خدمة الذكاء الاصطناعي مش متاحة دلوقتي. حاول تاني بعد شوية.', 0, $e);
         }
+
+        $this->logProvider($response->failed() ? 'error' : 'info', 'ai.provider.call', $context + [
+            'status'      => $response->status(),
+            'response'    => $this->clip($response->body()),
+            'duration_ms' => $this->elapsed($started),
+        ]);
 
         if ($response->failed()) {
             report(new AiUnavailable('AI API error: ' . $response->status() . ' ' . $response->body()));
@@ -115,6 +139,31 @@ class StatsAssistant
         }
 
         return $openai ? $adapter->normalize($response->json()) : $response->json();
+    }
+
+    private function logProvider(string $level, string $message, array $context): void
+    {
+        Log::channel(config('ai.provider_log_channel'))->log($level, $message, $context);
+    }
+
+    private function elapsed(float $started): int
+    {
+        return (int) ((microtime(true) - $started) * 1000);
+    }
+
+    private function clip(string $text): string
+    {
+        return Str::limit($text, (int) config('ai.log_body_limit'), '…[truncated]');
+    }
+
+    /** تعريفات الـ tools ثابتة وكبيرة، فنكتفي بأسمائها في اللوج. */
+    private function withoutToolDefinitions(array $body): array
+    {
+        if (isset($body['tools'])) {
+            $body['tools'] = array_map(fn ($t) => $t['name'] ?? $t['function']['name'] ?? '?', $body['tools']);
+        }
+
+        return $body;
     }
 
     private function http(): PendingRequest

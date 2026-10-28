@@ -5,9 +5,10 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
-/** يسجل كل طلب على الـ API (حتى المرفوض 401/429) في قناة الـ log المخصصة. مفيش tokens بتتسجل. */
+/** يسجل كل طلب على الـ API (حتى المرفوض 401/429) مع الـ response في قناة الـ log المخصصة. الـ Authorization header مش بيتسجل. */
 class LogAiRequests
 {
     public function handle(Request $request, Closure $next): Response
@@ -26,6 +27,7 @@ class LogAiRequests
                 'ip'          => $request->ip(),
                 'user_ref'    => $request->input('user_ref'),
                 'question'    => $request->input('question'),
+                'response'    => Str::limit((string) $response->getContent(), (int) config('ai.log_body_limit'), '…[truncated]'),
                 'duration_ms' => (int) ((microtime(true) - $startedAt) * 1000),
             ]
         );

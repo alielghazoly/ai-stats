@@ -74,6 +74,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // لوج الـ calls الخارجية لمزوّد الـ AI (request + response) من App\Ai\StatsAssistant
+        'ai_provider' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/ai-provider.log'),
+            'level' => 'info',
+            'days' => (int) env('AI_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
