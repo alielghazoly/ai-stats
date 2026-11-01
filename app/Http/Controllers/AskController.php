@@ -26,6 +26,7 @@ class AskController
         return response()->json([
             'answer' => $result['answer'],
             'tools'  => $result['tools'],
+            'files'  => $result['files'],
             'usage'  => [
                 'input_tokens'  => $result['input_tokens'],
                 'output_tokens' => $result['output_tokens'],

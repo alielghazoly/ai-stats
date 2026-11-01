@@ -3,6 +3,7 @@
 namespace App\Ai;
 
 use App\Ai\Tools\AiTool;
+use App\Ai\Tools\ExportReport;
 use App\Ai\Tools\ComplaintsCount;
 use App\Ai\Tools\NewUsersCount;
 use App\Ai\Tools\NfcTopupsCount;
@@ -21,6 +22,7 @@ class ToolRegistry
         NfcTopupsCount::class,
         NewUsersCount::class,
         ComplaintsCount::class,
+        ExportReport::class,
     ]) {
         foreach ($classes as $class) {
             $tool = app($class);

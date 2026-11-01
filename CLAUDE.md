@@ -27,8 +27,16 @@ Every API request (including 401/422/429) is logged to `storage/logs/ai-requests
 (method, path, status, ip, user_ref, question, duration_ms; never the token). Level: info <400, warning 4xx, error 5xx.
 Each answered question is also stored in the `ai_logs` table (tools, tokens, duration).
 
+## Excel / CSV export
+The `export_report` tool (`app/Ai/Tools/ExportReport.php` + `app/Ai/Exports/ReportExporter.php`) writes a **daily aggregated** table
+(nfc_topups, new_users, notifications, complaints) to `storage/app/exports/` as `.xlsx` (openspout) or `.csv` (UTF-8 BOM) and returns a
+temporary **signed** link (`GET /api/exports/{file}`, no Bearer, `signed` middleware, TTL `AI_EXPORT_TTL_MINUTES`). Old files are pruned on each export.
+`POST /ask` also returns `files[]` so the caller can render download buttons (done in the backend's `StatsAssistantPage`).
+`AI_PUBLIC_URL` must be the address the admin's browser uses (the link is signed for that host; set the https domain in production).
+Exports contain aggregates only, never names/phones. Needs `ext-zip` (in the Dockerfile).
+
 ## Commands
-- `php artisan test` (needs `pdo_sqlite`), `vendor/bin/pint` for style.
+- `docker exec stats-ai-service-app-1 php artisan test` (host PHP has no `pdo_sqlite`; the container does), `vendor/bin/pint` for style.
 - `docker compose up -d --build`, `docker compose logs -f app`.
 
 ## Conventions

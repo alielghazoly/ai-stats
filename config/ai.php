@@ -26,6 +26,11 @@ return [
     'provider_log_channel' => env('AI_PROVIDER_LOG_CHANNEL', 'ai_provider'),
     'log_body_limit' => (int) env('AI_LOG_BODY_LIMIT', 4000),
 
+    // ---- تصدير الملفات (Excel/CSV) ----
+    // العنوان اللي الأدمن بيفتح منه اللينك (مش host.docker.internal). في production حط الدومين العام بـ https.
+    'public_url'         => env('AI_PUBLIC_URL', env('APP_URL', 'http://localhost')),
+    'export_ttl_minutes' => (int) env('AI_EXPORT_TTL_MINUTES', 60),
+
     // ---- التواريخ ----
     // توقيت الأدمن (اللي بيقول "الشهر ده" بتوقيته)
     'timezone'    => env('AI_TIMEZONE', 'Africa/Cairo'),

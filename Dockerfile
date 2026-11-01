@@ -10,7 +10,7 @@ RUN composer dump-autoload --optimize --no-dev --no-scripts
 FROM php:8.4-fpm-alpine
 
 COPY --from=ghcr.io/mlocati/php-extension-installer:latest /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions pdo_pgsql pdo_mysql opcache
+RUN install-php-extensions pdo_pgsql pdo_mysql opcache zip
 
 WORKDIR /var/www/html
 COPY --from=vendor /app /var/www/html

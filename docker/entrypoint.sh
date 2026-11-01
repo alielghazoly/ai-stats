@@ -20,7 +20,7 @@ if [ -z "${AI_API_KEY:-$ANTHROPIC_API_KEY}" ]; then
     exit 1
 fi
 
-mkdir -p storage/app storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs
+mkdir -p storage/app/exports storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs
 [ -f storage/app/database.sqlite ] || touch storage/app/database.sqlite
 chown -R www-data:www-data storage bootstrap/cache
 
