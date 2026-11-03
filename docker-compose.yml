@@ -4,13 +4,13 @@ services:
     env_file: .env
     restart: unless-stopped
     volumes:
-      # dev: الكود + storage (logs) على الجهاز مباشرة. في production شيل السطر التاني وفعّل ai_storage:
+      # dev: code + storage (logs) directly on the host. In production remove the second line and enable ai_storage:
       # - ai_storage:/var/www/html/storage
       - ./:/var/www/html
-    # عشان الـ container يوصل لداتابيز شغالة على نفس السيرفر (host.docker.internal)
+    # so the container can reach a database running on the same server (host.docker.internal)
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    # لو الداتابيز في docker compose تاني، فك الكومنت وحط اسم الـ network:
+    # if the database is in another docker compose, uncomment and set the network name:
     # networks:
     #   - default
     #   - main_project_net
@@ -21,8 +21,8 @@ services:
     depends_on:
       - app
     ports:
-      # 0.0.0.0 عشان أي container (أو سيرفر تاني) يوصل. لو المشروع الأساسي مش docker
-      # وعلى نفس الجهاز، غيّرها لـ 127.0.0.1 في .env (AI_SERVICE_BIND).
+      # 0.0.0.0 so any container (or another server) can connect. If the main project is not docker
+      # and is on the same machine, change it to 127.0.0.1 in .env (AI_SERVICE_BIND).
       - "${AI_SERVICE_BIND:-0.0.0.0}:${AI_SERVICE_PORT:-8090}:80"
     volumes:
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro

@@ -13,7 +13,7 @@ class AskController
     {
         $data = $request->validate([
             'question' => ['required', 'string', 'min:2', 'max:500'],
-            // مين الأدمن اللي سأل في المشروع الأساسي (id أو email) - للـ logs والـ rate limit
+            // Which admin asked in the main project (id or email) - for logs and the rate limit
             'user_ref' => ['nullable', 'string', 'max:100'],
         ]);
 

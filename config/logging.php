@@ -65,7 +65,7 @@ return [
             'replace_placeholders' => true,
         ],
 
-        // لوج طلبات /api/v1/ask (انظر App\Http\Middleware\LogAiRequests)
+        // Log of /api/v1/ask requests (see App\Http\Middleware\LogAiRequests)
         'ai_requests' => [
             'driver' => 'daily',
             'path' => storage_path('logs/ai-requests.log'),
@@ -74,7 +74,7 @@ return [
             'replace_placeholders' => true,
         ],
 
-        // لوج الـ calls الخارجية لمزوّد الـ AI (request + response) من App\Ai\StatsAssistant
+        // Log of outgoing calls to the AI provider (request + response) from App\Ai\StatsAssistant
         'ai_provider' => [
             'driver' => 'daily',
             'path' => storage_path('logs/ai-provider.log'),

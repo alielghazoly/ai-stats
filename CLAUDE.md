@@ -1,7 +1,7 @@
 # Stats AI Service
 
 Standalone Laravel 13 (PHP 8.3+) API that answers admin statistics questions in natural language
-(Arabic, Egyptian dialect, by default) using Anthropic tool use. The main project (Filament) calls it over HTTP
+(the model replies in the language of the question) using Anthropic tool use. The main project (Filament) calls it over HTTP
 with a Bearer token; the service reads the main project's DB with a **SELECT-only** user and stores its own logs in a local sqlite DB.
 
 ## Layout
@@ -42,4 +42,4 @@ Exports contain aggregates only, never names/phones. Needs `ext-zip` (in the Doc
 ## Conventions
 - New tool: copy a file in `app/Ai/Tools`, implement `name/description/schema/handle`, register it in `ToolRegistry`, grant `SELECT` in `sql/readonly_user.sql`, add a test.
 - Tools return aggregated numbers only; never expose DB errors to the model. Tools are mapped to the main project's real schema (see `~/Projects/backend`): NFC top-ups = `recharge_session` (status 0 new/1 paid/2 charged/3 canceled; session_type 0 electricity/1 water), complaints = `contact_forms` (type 0 request/1 complain/2 orion; status 0–5), plus `users` and `notifications` (all soft-deleted via `deleted_at`). Keep status mappings in sync with the backend enums.
-- Code comments and user-facing strings are Arabic; keep that style.
+- Code comments and user-facing strings are English; keep that style.

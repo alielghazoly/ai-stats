@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    /** متغيرات بيئة الـ container (docker env_file) بتغلب على phpunit.xml، فنثبّت قيم الاختبار قبل ما التطبيق يشتغل. */
+    /** Container env vars (docker env_file) override phpunit.xml, so pin the test values before the app boots. */
     public function createApplication(): Application
     {
         foreach ([

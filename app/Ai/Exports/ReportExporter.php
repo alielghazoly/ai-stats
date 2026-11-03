@@ -11,8 +11,8 @@ use OpenSpout\Common\Entity\Row;
 use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 
 /**
- * يبني جداول يومية مجمّعة (من نفس الـ queries بتاعة الـ tools، مفيش بيانات شخصية)
- * ويكتبها CSV أو XLSX في storage/app/exports ويرجّع لينك تحميل موقّع ومؤقت.
+ * Builds aggregated daily tables (from the same queries as the tools, no personal data)
+ * and writes them as CSV or XLSX to storage/app/exports, returning a signed temporary download link.
  */
 class ReportExporter
 {
@@ -26,7 +26,7 @@ class ReportExporter
     private const COMPLAINT_TYPES = ['request' => 0, 'complain' => 1, 'orion' => 2];
 
     /**
-     * @param  array{0: \Carbon\CarbonInterface, 1: \Carbon\CarbonInterface}  $range  حدود الفترة بتوقيت الداتابيز (من AiTool::range)
+     * @param  array{0: \Carbon\CarbonInterface, 1: \Carbon\CarbonInterface}  $range  period bounds in the database timezone (from AiTool::range)
      * @return array{headers: string[], rows: array<int, array<int, string|int|float>>}
      */
     public function table(ConnectionInterface $db, string $report, string $fromDate, string $toDate, array $range, array $options = []): array
@@ -39,7 +39,7 @@ class ReportExporter
             default         => throw new InvalidArgumentException('report must be one of: ' . implode(', ', self::REPORTS) . '.'),
         };
 
-        // صف لكل يوم في الفترة (حتى الأيام اللي مفيهاش بيانات = أصفار)
+        // One row per day in the period (even days with no data = zeros)
         $zeros = array_fill(0, count($table['headers']) - 1, 0);
         $rows  = [];
         foreach (CarbonPeriod::create($fromDate, $toDate) as $day) {
@@ -50,7 +50,7 @@ class ReportExporter
         return ['headers' => $table['headers'], 'rows' => $rows];
     }
 
-    /** يكتب الملف ويرجّع بيانات اللينك. @return array{url: string, file_name: string, format: string, rows: int, expires_at: string} */
+    /** Writes the file and returns the link data. @return array{url: string, file_name: string, format: string, rows: int, expires_at: string} */
     public function write(array $headers, array $rows, string $format, string $slug): array
     {
         if (! in_array($format, ['csv', 'xlsx'], true)) {
@@ -70,7 +70,7 @@ class ReportExporter
 
         $expires = now()->addMinutes((int) config('ai.export_ttl_minutes'));
 
-        // اللينك لازم يشاور على العنوان العام اللي الأدمن بيفتحه، مش على host.docker.internal اللي جه منه الطلب
+        // The link must point to the public address the admin opens, not host.docker.internal which the request came from
         URL::forceRootUrl((string) config('ai.public_url'));
         try {
             $url = URL::temporarySignedRoute('exports.download', $expires, ['file' => $name]);
@@ -90,7 +90,7 @@ class ReportExporter
     private function writeCsv(string $path, array $headers, array $rows): void
     {
         $f = fopen($path, 'w');
-        fwrite($f, "\xEF\xBB\xBF"); // BOM عشان Excel يقرا UTF-8 صح
+        fwrite($f, "\xEF\xBB\xBF"); // BOM so Excel reads UTF-8 correctly
         fputcsv($f, $headers, ',', '"', '');
         foreach ($rows as $row) {
             fputcsv($f, $row, ',', '"', '');
@@ -109,7 +109,7 @@ class ReportExporter
         $writer->close();
     }
 
-    /** يمسح الملفات الأقدم من مدة صلاحية اللينك. */
+    /** Deletes files older than the link validity period. */
     private function prune(string $dir): void
     {
         $limit = time() - ((int) config('ai.export_ttl_minutes') + 5) * 60;
@@ -120,7 +120,7 @@ class ReportExporter
         }
     }
 
-    /** تعبير SQL لتاريخ اليوم بتوقيت الشغل (مش UTC)، عشان حدود اليوم تطابق اللي الأدمن بيقصده. */
+    /** SQL expression for the date in the working timezone (not UTC), so day bounds match what the admin means. */
     private function day(ConnectionInterface $db): string
     {
         if ($db->getDriverName() === 'pgsql') {

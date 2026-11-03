@@ -1,95 +1,95 @@
 # Stats AI Service
 
-خدمة Laravel منفصلة (Docker) بتجاوب أسئلة الإحصائيات بالـ AI عن طريق Tool Use.
+A standalone Laravel service (Docker) that answers statistics questions with AI using Tool Use.
 
 ```
-المشروع الأساسي (Filament) ──HTTP + Bearer token──► Stats AI Service ──SELECT فقط──► داتابيز المشروع الأساسي
+Main project (Filament) ──HTTP + Bearer token──► Stats AI Service ──SELECT only──► main project database
                                                          │
-                                                         └─► Anthropic API
+                                                         └─► AI provider API
 ```
 
-- الخدمة بتقرأ من داتابيز المشروع الأساسي بـ user بصلاحية `SELECT` بس، وبتخزن الـ logs في sqlite صغيرة جوه volume خاص بيها (مفيش أي كتابة على الداتابيز الأساسية).
-- الـ API: `POST /api/v1/ask` بـ `{"question": "...", "user_ref": "admin-1"}`، والرد `{answer, tools, usage}`.
+- The service reads the main project's database with a `SELECT`-only user and stores its logs in a small sqlite database inside its own volume (it never writes to the main database).
+- API: `POST /api/v1/ask` with `{"question": "...", "user_ref": "admin-1"}`; the response is `{answer, tools, files, usage}`.
 
-## التركيب
+## Installation
 
-### 1. اعمل Laravel جديد وحط الملفات فوقه
+### 1. Create a new Laravel app and put the files on top of it
 
 ```bash
 composer create-project laravel/laravel stats-ai-service
-# أو من غير PHP محلي:
+# or without local PHP:
 # docker run --rm -v "$PWD":/app composer:2 create-project laravel/laravel stats-ai-service
 
-# فك ضغط الـ zip فوق مجلد المشروع (استبدل الملفات الموجودة: bootstrap/app.php وbootstrap/providers.php)
+# Unzip over the project folder (replace the existing files: bootstrap/app.php and bootstrap/providers.php)
 cd stats-ai-service
 ```
 
-### 2. جهّز الداتابيز الأساسية
+### 2. Prepare the main database
 
-نفّذ `sql/readonly_user.sql` على داتابيز المشروع الأساسي (عدّل الباسورد وأسماء الجداول).
-لو الداتابيز على نفس السيرفر، لازم تسمح باتصال من الـ Docker:
-- PostgreSQL: `listen_addresses` في `postgresql.conf`، وسطر في `pg_hba.conf` لشبكة Docker (مثلًا `host your_db ai_readonly 172.16.0.0/12 scram-sha-256`).
-- MySQL: user بـ `'ai_readonly'@'%'` وتأكد إن `bind-address` مش `127.0.0.1` بس.
+Run `sql/readonly_user.sql` on the main project's database (change the password and table names).
+If the database is on the same server, it must accept connections from Docker:
+- PostgreSQL: `listen_addresses` in `postgresql.conf`, and a line in `pg_hba.conf` for the Docker network (e.g. `host your_db ai_readonly 172.16.0.0/12 scram-sha-256`).
+- MySQL: a user as `'ai_readonly'@'%'`, and make sure `bind-address` is not only `127.0.0.1`.
 
-### 3. الإعدادات
+### 3. Configuration
 
 ```bash
 cp .env.example .env
 ```
-املأ: `APP_KEY` و`AI_SERVICE_TOKEN` و`ANTHROPIC_API_KEY` و`AI_DB_*` (وغيّر `AI_DB_DRIVER` لـ `mysql` لو لزم).
-الـ container مش هيشتغل لو واحد منهم ناقص (رسالة واضحة في الـ logs).
+Fill in: `APP_KEY`, `AI_SERVICE_TOKEN`, `AI_API_KEY` (or `ANTHROPIC_API_KEY`) and `AI_DB_*` (set `AI_DB_DRIVER` to `mysql` if needed).
+The container will not start if one of them is missing (a clear message is printed in the logs).
 
-### 4. شغّل
+### 4. Run
 
 ```bash
 docker compose up -d --build
-docker compose logs -f app            # راقب الـ migrate والبدء
+docker compose logs -f app            # watch the migration and startup
 curl http://localhost:8090/up         # health check
 ```
 
-### 5. جرّب
+### 5. Try it
 
 ```bash
 curl -s http://localhost:8090/api/v1/ask \
   -H "Authorization: Bearer $AI_SERVICE_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"question":"كام مستخدم جديد الشهر ده؟","user_ref":"me"}'
+  -d '{"question":"How many new users this month?","user_ref":"me"}'
 ```
 
-## الربط من المشروع الأساسي
+## Connecting from the main project
 
-شوف `examples/main-project/`:
-- `AiStatsClient.php`: الـ client + إعدادات `config/services.php` و`.env`.
-- `StatsAssistantPage.php` + الـ blade: صفحة Filament بتنادي الـ client.
-- `ask.mjs`: نفس الفكرة من Node.
+See `examples/main-project/`:
+- `AiStatsClient.php`: the client + `config/services.php` and `.env` settings.
+- `StatsAssistantPage.php` + the blade view: a Filament page that calls the client.
+- `ask.mjs`: the same idea from Node.
 
-الـ URL حسب مكان المشروع الأساسي:
-- على نفس السيرفر بدون Docker: `http://127.0.0.1:8090`.
-- جوه Docker تاني: `http://host.docker.internal:8090` (ضيف `extra_hosts: host.docker.internal:host-gateway` عنده)، أو ضمّهم لـ network واحدة (الكومنتات في `docker-compose.yml`) واستخدم `http://web`.
-- على سيرفر تاني: حط reverse proxy بـ HTTPS قدام الخدمة، ولا تفتح البورت للإنترنت من غير ده، لأن الـ token بيعدي على الشبكة.
+The URL depends on where the main project runs:
+- On the same server without Docker: `http://127.0.0.1:8090`.
+- Inside another Docker setup: `http://host.docker.internal:8090` (add `extra_hosts: host.docker.internal:host-gateway` there), or join them to one network (see the comments in `docker-compose.yml`) and use `http://web`.
+- On another server: put a reverse proxy with HTTPS in front of the service, and do not expose the port to the internet without it, because the token travels over the network.
 
-## لازم تعدّل
+## What you must adjust
 
-- أسماء الجداول والأعمدة والقيم في `app/Ai/Tools/*` (`payments.method = 'nfc'`, `status = 'success'`, `notifications.channel`...)، وصلاحيات `SELECT` في `sql/readonly_user.sql` تتطابق معاها.
-- `AI_DB_TIMEZONE`: لو المشروع الأساسي بيخزن `created_at` بتوقيت غير UTC.
-- `AI_MODEL`: آخر اسم موديل من الـ docs.
+- Table, column and value names in `app/Ai/Tools/*` (they must match the main project's schema), and the `SELECT` grants in `sql/readonly_user.sql` must match them.
+- `AI_DB_TIMEZONE`: if the main project stores `created_at` in a timezone other than UTC.
+- `AI_MODEL`: the latest model name from the provider's docs.
 
-## إضافة tool جديد
+## Adding a new tool
 
-1. انسخ أي ملف في `app/Ai/Tools`، وغيّر `name/description/schema/handle`.
-2. ضيفه في قائمة `ToolRegistry`.
-3. ادّي `ai_readonly` صلاحية `SELECT` على الجدول.
-4. اكتب له اختبار، وجرّبه بالسؤال الحقيقي.
+1. Copy any file in `app/Ai/Tools` and change `name/description/schema/handle`.
+2. Add it to the `ToolRegistry` list.
+3. Grant `ai_readonly` `SELECT` on the table.
+4. Write a test for it, and try it with a real question.
 
-## اختبارات
+## Tests
 
 ```bash
 php artisan test --filter=AskApiTest
 ```
 
-## الأمان
+## Security
 
-- Bearer token بيتقارن بـ `hash_equals`، والـ rate limit بالدقيقة لكل `user_ref`.
-- الـ tools بترجّع أرقام مجمّعة بس، وأخطاء الـ DB ما بتوصلش للنموذج.
-- كل سؤال بيتسجل في `ai_logs` (السؤال، الـ tools، التوكنز، الزمن).
-- لو غيّرت التوكن في الخدمة غيّره في المشروع الأساسي.
+- The Bearer token is compared with `hash_equals`, and the rate limit is per minute per `user_ref`.
+- The tools only return aggregated numbers, and DB errors never reach the model.
+- Every question is recorded in `ai_logs` (question, tools, tokens, duration).
+- If you change the token in the service, change it in the main project too.

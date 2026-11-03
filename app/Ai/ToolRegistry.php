@@ -41,8 +41,8 @@ class ToolRegistry
     }
 
     /**
-     * ينفذ tool بالاسم. أي خطأ بيرجع للنموذج كـ error عشان يصحح نفسه
-     * أو يشرح للأدمن، من غير ما يوقع الصفحة.
+     * Runs a tool by name. Any error is returned to the model as an error result so it can correct itself
+     * or explain it to the admin, without crashing the request.
      *
      * @return array{result: array, is_error: bool}
      */
@@ -57,12 +57,12 @@ class ToolRegistry
         try {
             return ['result' => $tool->handle($input), 'is_error' => false];
         } catch (InvalidArgumentException $e) {
-            // أخطاء validation: آمن نعرض رسالتها للنموذج
+            // Validation errors: safe to show the message to the model
             return ['result' => ['error' => $e->getMessage()], 'is_error' => true];
         } catch (Throwable $e) {
             report($e);
 
-            // مانرجعش تفاصيل الـ DB أو الـ stack للنموذج
+            // Never return DB details or stack traces to the model
             return ['result' => ['error' => 'The query failed. Please try again later.'], 'is_error' => true];
         }
     }

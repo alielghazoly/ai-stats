@@ -1,6 +1,6 @@
 <?php
 
-// المشروع الأساسي: app/Services/AiStatsClient.php
+// Main project: app/Services/AiStatsClient.php
 
 namespace App\Services;
 
@@ -19,7 +19,7 @@ class AiStatsClient
             return Http::baseUrl(config('services.ai_stats.url'))
                 ->withToken(config('services.ai_stats.token'))
                 ->acceptJson()
-                ->timeout(120) // الخدمة ممكن تعمل لحد 5 لفات مع الـ AI
+                ->timeout(120) // the service may run up to 5 rounds with the AI
                 ->post('/api/v1/ask', [
                     'question' => $question,
                     'user_ref' => $userRef,
@@ -28,9 +28,9 @@ class AiStatsClient
                 ->json();
         } catch (RequestException $e) {
             $message = match ($e->response->status()) {
-                422     => 'السؤال غير صالح (قصير أو طويل أكتر من 500 حرف).',
-                429     => 'كتير أوي، استنى شوية وجرّب تاني.',
-                default => 'مساعد الإحصائيات مش متاح دلوقتي.',
+                422     => 'Invalid question (too short or longer than 500 characters).',
+                429     => 'Too many requests, wait a moment and try again.',
+                default => 'The statistics assistant is not available right now.',
             };
 
             throw new RuntimeException($message, previous: $e);
@@ -39,14 +39,14 @@ class AiStatsClient
 }
 
 /*
- * ----- config/services.php (ضيف المفتاح ده) -----
+ * ----- config/services.php (add this key) -----
  *
  * 'ai_stats' => [
- *     'url'   => env('AI_STATS_URL'),    // مثال: http://host.docker.internal:8090
- *     'token' => env('AI_STATS_TOKEN'),  // نفس AI_SERVICE_TOKEN
+ *     'url'   => env('AI_STATS_URL'),    // e.g. http://host.docker.internal:8090
+ *     'token' => env('AI_STATS_TOKEN'),  // same as AI_SERVICE_TOKEN
  * ],
  *
- * ----- .env في المشروع الأساسي -----
+ * ----- .env in the main project -----
  *
  * AI_STATS_URL=http://host.docker.internal:8090
  * AI_STATS_TOKEN=...

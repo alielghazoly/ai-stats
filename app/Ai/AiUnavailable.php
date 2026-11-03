@@ -4,7 +4,7 @@ namespace App\Ai;
 
 use RuntimeException;
 
-/** بيتعمل throw لما الـ AI API نفسه مش متاح أو رجّع خطأ. */
+/** Thrown when the AI API itself is unavailable or returned an error. */
 class AiUnavailable extends RuntimeException
 {
 }

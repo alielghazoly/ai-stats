@@ -1,4 +1,4 @@
-// مثال Node.js (Node 18+) لو عايز تنادي الخدمة من مشروع Node (مثل الـ middleware)
+// Node.js example (Node 18+) if you want to call the service from a Node project (e.g. a middleware)
 const res = await fetch(`${process.env.AI_STATS_URL}/api/v1/ask`, {
   method: 'POST',
   headers: {
@@ -6,7 +6,7 @@ const res = await fetch(`${process.env.AI_STATS_URL}/api/v1/ask`, {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  body: JSON.stringify({ question: 'كام شحنة NFC اتعملت الشهر ده؟', user_ref: 'admin-1' }),
+  body: JSON.stringify({ question: 'How many NFC top-ups were made this month?', user_ref: 'admin-1' }),
   signal: AbortSignal.timeout(120_000),
 });
 

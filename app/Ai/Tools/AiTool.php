@@ -9,16 +9,16 @@ use InvalidArgumentException;
 
 abstract class AiTool
 {
-    /** اسم الـ tool اللي النموذج هيناديه (snake_case) */
+    /** Name the model will call the tool by (snake_case) */
     abstract public function name(): string;
 
-    /** وصف واضح: النموذج بيختار الـ tool بناءً عليه */
+    /** Clear description: the model picks the tool based on it */
     abstract public function description(): string;
 
-    /** JSON Schema للـ parameters */
+    /** JSON Schema for the parameters */
     abstract public function schema(): array;
 
-    /** ينفذ الـ tool ويرجّع array (أرقام مجمّعة بس) */
+    /** Runs the tool and returns an array (aggregated numbers only) */
     abstract public function handle(array $input): array;
 
     final public function definition(): array
@@ -30,16 +30,16 @@ abstract class AiTool
         ];
     }
 
-    /** كل الـ tools بتقرأ من الـ read-only connection فقط */
+    /** All tools read from the read-only connection only */
     protected function db(): ConnectionInterface
     {
         return DB::connection(config('ai.db_connection'));
     }
 
     /**
-     * يتحقق من from_date / to_date ويرجّع [start, end] بحدود اليوم الكاملة
-     * بتوقيت الشغل (ai.timezone) ومحوّلة لتوقيت تخزين الداتابيز (ai.db_timezone)،
-     * جاهزة للاستخدام مباشرة في whereBetween.
+     * Validates from_date / to_date and returns [start, end] covering whole days
+     * in the working timezone (ai.timezone), converted to the database storage timezone (ai.db_timezone),
+     * ready to use directly in whereBetween.
      *
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
@@ -83,7 +83,7 @@ abstract class AiTool
         return $date;
     }
 
-    /** Schema جاهز للـ tools اللي بتاخد فترة زمنية */
+    /** Ready-made schema for tools that take a time period */
     protected function dateRangeProperties(): array
     {
         return [

@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/** يتحقق من Bearer token المشترك بين المشروع الأساسي وخدمة الـ AI. */
+/** Verifies the Bearer token shared between the main project and the AI service. */
 class ServiceTokenAuth
 {
     public function handle(Request $request, Closure $next): Response

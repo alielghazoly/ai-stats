@@ -16,7 +16,7 @@ class AskApiTest extends TestCase
     {
         parent::setUp();
 
-        // في الاختبارات الـ "main DB" هي نفس الداتابيز الافتراضية (sqlite in-memory)
+        // In tests the "main DB" is the same default database (sqlite in-memory)
         config([
             'ai.db_connection' => config('database.default'),
             'ai.service_token' => 'secret',
@@ -57,14 +57,14 @@ class AskApiTest extends TestCase
             ->push([
                 'stop_reason' => 'end_turn',
                 'usage'       => ['input_tokens' => 20, 'output_tokens' => 8],
-                'content'     => [['type' => 'text', 'text' => 'عدد المستخدمين الجدد: 0']],
+                'content'     => [['type' => 'text', 'text' => 'New users: 0']],
             ]);
 
         $this->app->bind(ToolRegistry::class, fn () => new ToolRegistry([NewUsersCount::class]));
 
-        $this->postJson('/api/v1/ask', ['question' => 'كام مستخدم جديد؟', 'user_ref' => 'admin-1'], $this->headers())
+        $this->postJson('/api/v1/ask', ['question' => 'How many new users?', 'user_ref' => 'admin-1'], $this->headers())
             ->assertOk()
-            ->assertJsonPath('answer', 'عدد المستخدمين الجدد: 0')
+            ->assertJsonPath('answer', 'New users: 0')
             ->assertJsonPath('tools.0.name', 'get_new_users_count')
             ->assertJsonPath('usage.input_tokens', 30);
 
@@ -75,7 +75,7 @@ class AskApiTest extends TestCase
     {
         Http::fake(['*' => Http::response(['error' => 'boom'], 500)]);
 
-        $this->postJson('/api/v1/ask', ['question' => 'كام مستخدم؟'], $this->headers())
+        $this->postJson('/api/v1/ask', ['question' => 'How many users?'], $this->headers())
             ->assertStatus(502);
     }
 

@@ -1,7 +1,7 @@
 <?php
 
-// المشروع الأساسي: app/Filament/Pages/StatsAssistantPage.php
-// (الـ blade view: resources/views/filament/pages/stats-assistant.blade.php - موجود جنبه)
+// Main project: app/Filament/Pages/StatsAssistantPage.php
+// (the blade view: resources/views/filament/pages/stats-assistant.blade.php - next to it)
 
 namespace App\Filament\Pages;
 
@@ -11,12 +11,12 @@ use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 
-// Filament v3. في v4 غيّر $view لـ `protected string $view` (مش static).
+// Filament v3. In v4 change $view to `protected string $view` (not static).
 class StatsAssistantPage extends Page
 {
     protected static ?string $navigationIcon  = 'heroicon-o-chat-bubble-left-right';
-    protected static ?string $navigationLabel = 'مساعد الإحصائيات';
-    protected static ?string $title           = 'مساعد الإحصائيات';
+    protected static ?string $navigationLabel = 'Stats Assistant';
+    protected static ?string $title           = 'Stats Assistant';
     protected static string $view             = 'filament.pages.stats-assistant';
 
     public string $question = '';
@@ -28,7 +28,7 @@ class StatsAssistantPage extends Page
     {
         $user = Auth::user();
 
-        // عدّل حسب نظام الصلاحيات عندك (مثال spatie):
+        // Adjust to your permission system (e.g. spatie):
         return $user && method_exists($user, 'hasAnyRole') && $user->hasAnyRole(['super_admin', 'admin']);
     }
 
@@ -39,7 +39,7 @@ class StatsAssistantPage extends Page
         $question = trim($this->question);
 
         if ($question === '' || mb_strlen($question) > 500) {
-            Notification::make()->title('اكتب سؤال (أقصى 500 حرف)')->warning()->send();
+            Notification::make()->title('Enter a question (max 500 characters)')->warning()->send();
             return;
         }
 

@@ -11,7 +11,7 @@ class AiServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // سجّل connection الداتابيز الأساسية (read-only) من config/ai.php
+        // Register the main (read-only) database connection from config/ai.php
         config(['database.connections.' . config('ai.db_connection') => config('ai.db')]);
     }
 

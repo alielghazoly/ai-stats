@@ -3,43 +3,43 @@
 $driver = env('AI_DB_DRIVER', 'pgsql'); // pgsql | mysql
 
 return [
-    // ---- مزوّد الـ AI ----
-    // anthropic (افتراضي) | openai = أي API متوافق مع OpenAI (OpenRouter, Groq, Gemini, Ollama...)
-    // مثال مجاني: AI_PROVIDER=openai AI_BASE_URL=https://openrouter.ai/api/v1 AI_API_KEY=... AI_MODEL=<موديل :free بيدعم tools>
+    // ---- AI provider ----
+    // anthropic (default) | openai = any OpenAI-compatible API (OpenRouter, Groq, Gemini, Ollama...)
+    // Free example: AI_PROVIDER=openai AI_BASE_URL=https://openrouter.ai/api/v1 AI_API_KEY=... AI_MODEL=<a :free model that supports tools>
     'provider'   => env('AI_PROVIDER', 'anthropic'),
     'api_key'    => env('AI_API_KEY', env('ANTHROPIC_API_KEY')),
     'base_url'   => env('AI_BASE_URL', env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com')),
     'version'    => '2023-06-01',
-    // راجع الـ docs لأحدث اسم موديل. موديل أصغر كفاية لمهمة زي دي.
+    // See the docs for the latest model name. A smaller model is enough for a task like this.
     'model'      => env('AI_MODEL', 'claude-sonnet-5-5'),
     'max_tokens' => 1024,
     'timeout'    => 30,
     'max_iterations' => 5,
 
-    // ---- حماية الـ API بين المشروعين ----
-    // توكن طويل عشوائي (openssl rand -hex 32). نفس القيمة في المشروع الأساسي.
+    // ---- API protection between the two projects ----
+    // Long random token (openssl rand -hex 32). Same value in the main project.
     'service_token' => env('AI_SERVICE_TOKEN'),
     'rate_limit_per_minute' => (int) env('AI_RATE_LIMIT', 10),
 
-    // ---- لوج الطلبات ----
+    // ---- Request logging ----
     'log_channel' => env('AI_LOG_CHANNEL', 'ai_requests'),
     'provider_log_channel' => env('AI_PROVIDER_LOG_CHANNEL', 'ai_provider'),
     'log_body_limit' => (int) env('AI_LOG_BODY_LIMIT', 4000),
 
-    // ---- تصدير الملفات (Excel/CSV) ----
-    // العنوان اللي الأدمن بيفتح منه اللينك (مش host.docker.internal). في production حط الدومين العام بـ https.
+    // ---- File export (Excel/CSV) ----
+    // Address the admin opens the link from (not host.docker.internal). In production use the public domain with https.
     'public_url'         => env('AI_PUBLIC_URL', env('APP_URL', 'http://localhost')),
     'export_ttl_minutes' => (int) env('AI_EXPORT_TTL_MINUTES', 60),
 
-    // ---- التواريخ ----
-    // توقيت الأدمن (اللي بيقول "الشهر ده" بتوقيته)
+    // ---- Dates ----
+    // The admin's timezone ("this month" is interpreted in it)
     'timezone'    => env('AI_TIMEZONE', 'Africa/Cairo'),
-    // التوقيت اللي المشروع الأساسي بيخزن بيه created_at. Laravel بيخزن UTC افتراضيًا
-    // إلا لو غيرت app.timezone هناك. راجع config/app.php في المشروع الأساسي.
+    // Timezone the main project stores created_at in. Laravel stores UTC by default
+    // unless app.timezone was changed there. Check config/app.php in the main project.
     'db_timezone' => env('AI_DB_TIMEZONE', 'UTC'),
     'max_range_days' => 366,
 
-    // ---- داتابيز المشروع الأساسي (read-only) ----
+    // ---- Main project database (read-only) ----
     'db_connection' => 'main_readonly',
     'db' => match ($driver) {
         'mysql' => [

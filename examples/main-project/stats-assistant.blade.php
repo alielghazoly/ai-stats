@@ -5,7 +5,7 @@
                 <x-filament::input
                     type="text"
                     wire:model="question"
-                    placeholder="مثال: كام شحنة NFC اتعملت الشهر ده؟"
+                    placeholder="Example: How many NFC top-ups were made this month?"
                     maxlength="500"
                     dir="auto"
                 />
@@ -13,8 +13,8 @@
         </div>
 
         <x-filament::button type="submit" wire:loading.attr="disabled" wire:target="ask">
-            <span wire:loading.remove wire:target="ask">اسأل</span>
-            <span wire:loading wire:target="ask">بيحسب...</span>
+            <span wire:loading.remove wire:target="ask">Ask</span>
+            <span wire:loading wire:target="ask">Calculating...</span>
         </x-filament::button>
     </form>
 
@@ -31,7 +31,7 @@
 
                 @if (! empty($item['tools']))
                     <details class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                        <summary class="cursor-pointer">إزاي وصلت للرقم؟</summary>
+                        <summary class="cursor-pointer">How did you get this number?</summary>
                         <ul class="mt-1 list-disc ps-5">
                             @foreach ($item['tools'] as $tool)
                                 <li>

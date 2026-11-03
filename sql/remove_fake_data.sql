@@ -1,4 +1,4 @@
--- يحذف بيانات الاختبار اللي اتضافت في الداتابيز (كلها متعلّمة بـ FAKE). نفّذه بيوزر ليه صلاحية DELETE.
+-- Deletes the test data added to the database (all marked FAKE). Run as a user with DELETE permission.
 BEGIN;
 DELETE FROM contact_forms    WHERE description LIKE '[FAKE]%';
 DELETE FROM notifications    WHERE title_en LIKE '[FAKE]%';

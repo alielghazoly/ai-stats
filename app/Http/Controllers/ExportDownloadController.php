@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportDownloadController
 {
-    /** لينك موقّع ومؤقت (middleware `signed`)، بدون Bearer لأن الأدمن بيفتحه من المتصفح. */
+    /** Signed temporary link (`signed` middleware), no Bearer because the admin opens it from the browser. */
     public function __invoke(string $file): BinaryFileResponse
     {
         abort_unless(preg_match('/^[0-9a-f-]{36}-[a-z0-9_.-]+\.(csv|xlsx)$/', $file, $m), 404);

@@ -13,7 +13,7 @@ class ExportDownloadTest extends TestCase
     {
         parent::setUp();
 
-        // اللينك الموقّع لازم يطابق الـ host اللي الاختبار بيطلب منه
+        // The signed link must match the host the test requests from
         config(['ai.public_url' => 'http://localhost', 'ai.export_ttl_minutes' => 60]);
     }
 

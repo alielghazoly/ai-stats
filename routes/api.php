@@ -12,7 +12,7 @@ Route::prefix('v1')
         Route::post('/ask', AskController::class);
     });
 
-// تحميل الملفات المُصدَّرة: لينك موقّع ومؤقت من غير Bearer
+// Exported file download: signed temporary link without Bearer
 Route::get('exports/{file}', ExportDownloadController::class)
     ->middleware(['signed', 'throttle:30,1'])
     ->name('exports.download');

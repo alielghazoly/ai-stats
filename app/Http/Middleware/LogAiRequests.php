@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
-/** يسجل كل طلب على الـ API (حتى المرفوض 401/429) مع الـ response في قناة الـ log المخصصة. الـ Authorization header مش بيتسجل. */
+/** Logs every API request (even rejected 401/429) with its response to the dedicated log channel. The Authorization header is never logged. */
 class LogAiRequests
 {
     public function handle(Request $request, Closure $next): Response

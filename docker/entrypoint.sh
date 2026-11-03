@@ -2,7 +2,7 @@
 set -e
 cd /var/www/html
 
-# فشل مبكر لو إعداد أساسي ناقص
+# Fail early if a required setting is missing
 for v in APP_KEY AI_SERVICE_TOKEN AI_DB_DATABASE AI_DB_USERNAME AI_DB_PASSWORD; do
     eval "val=\${$v}"
     if [ -z "$val" ]; then
@@ -11,7 +11,7 @@ for v in APP_KEY AI_SERVICE_TOKEN AI_DB_DATABASE AI_DB_USERNAME AI_DB_PASSWORD; 
     fi
 done
 
-# اللوجز (ai_logs) في sqlite جوه الـ volume مش جوه الـ image
+# Logs (ai_logs) live in sqlite inside the volume, not inside the image
 export DB_CONNECTION=sqlite
 export DB_DATABASE=/var/www/html/storage/app/database.sqlite
 
@@ -26,7 +26,7 @@ chown -R www-data:www-data storage bootstrap/cache
 
 php artisan package:discover --ansi
 php artisan migrate --force
-# الكاش في production بس (مع bind mount في الـ dev كان بيكتب ملفات root جوه المشروع)
+# Cache in production only (with the dev bind mount it wrote root-owned files into the project)
 if [ "${APP_ENV:-production}" = "production" ]; then
     php artisan config:cache
     php artisan route:cache
